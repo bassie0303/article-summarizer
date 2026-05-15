@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記事シェアアプリ — 投稿版ブックマークレット</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
+    header { background: #2d6a4f; color: #fff; padding: 24px 40px; }
+    header h1 { font-size: 22px; font-weight: 700; }
+    header p { font-size: 14px; opacity: .75; margin-top: 4px; }
+    main { max-width: 700px; margin: 40px auto; padding: 0 20px 60px; }
+    section { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #2d6a4f; }
+    #bm-link {
+      display: inline-block; padding: 14px 28px; background: #2d6a4f; color: #fff !important;
+      border-radius: 10px; text-decoration: none; font-size: 18px; font-weight: 700;
+      cursor: grab; user-select: none; border: 3px dashed transparent; transition: border-color .15s;
+    }
+    #bm-link:hover { border-color: #74c69d; }
+    .hint { font-size: 13px; color: #888; margin-top: 10px; line-height: 1.6; }
+    ol li { margin-bottom: 10px; font-size: 14px; line-height: 1.6; padding-left: 4px; }
+    ol { padding-left: 20px; }
+    .note { background: #d8f3dc; border-left: 4px solid #2d6a4f; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.6; margin-top: 16px; }
+    .warn { background: #fff7e0; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.6; margin-top: 16px; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+    pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; font-size: 11px; overflow-x: auto; margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
+    details { margin-top: 16px; }
+    summary { cursor: pointer; font-size: 13px; color: #2d6a4f; font-weight: 600; }
+    button.act { padding: 8px 16px; background: #2d6a4f; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; margin-top: 10px; }
+    #bm-len { font-size: 13px; margin-top: 10px; font-weight: 600; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+    .badge-ok { background: #d8f3dc; color: #166534; }
+    .badge-ng { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>✍️ 記事シェアアプリ — 投稿版</h1>
+    <p>引用＋コメントをSNSに投稿するブックマークレット（外部JS読み込み方式）</p>
+  </header>
+  <main>
+    <section>
+      <h2>① ブックマークレットをインストール</h2>
+      <p style="font-size:14px;margin-bottom:16px;">下のボタンを <strong>ブックマークバーにドラッグ</strong> してください。</p>
+      <a id="bm-link" href="#">✍️ 記事シェア（投稿版）</a>
+      <div id="bm-len"></div>
+      <p class="hint">Chrome は <code>⌘+Shift+B</code> (Mac) / <code>Ctrl+Shift+B</code> (Win) でブックマークバーを表示できます。</p>
+
+      <details open>
+        <summary>手動インストール（Android・同期できない場合はこちら）</summary>
+        <p style="font-size:13px;color:#555;margin-top:10px;">
+          <strong>① 「コードをコピー」を押す</strong><br>
+          <strong>② ブックマークバーを右クリック →「ページを追加…」</strong><br>
+          <strong>③ 名前: <code>✍️ 記事シェア（投稿版）</code>　URL欄: コードを貼り付け → 保存</strong>
+        </p>
+        <pre id="bm-code">生成中...</pre>
+        <button class="act" onclick="copyCode()">📋 コードをコピー</button>
+      </details>
+
+      <details style="margin-top:8px;">
+        <summary>このページで動作テスト</summary>
+        <p style="font-size:13px;color:#555;margin:10px 0;">外部JSを読み込んでパネルが開きます。</p>
+        <button class="act" onclick="runBookmarklet()">▶ ここで試す</button>
+      </details>
+
+      <div class="note" style="margin-top:16px;">
+        💡 <strong>なぜ短くなった？</strong><br>
+        パネルのロジックを <code>bookmarklet_post.js</code> として GitHub に置き、ブックマークには「そのJSを読み込む小さなコード」だけを登録する方式に変更しました。<br>
+        ブックマークURL は約 <strong id="bm-len2">—</strong> 文字で、Chrome 同期・Android でも問題なく動作します。
+      </div>
+    </section>
+
+    <section>
+      <h2>⚠️ GitHub へのプッシュが必要です</h2>
+      <p style="font-size:14px;line-height:1.8;">ブックマークレットは <code>bookmarklet_post.js</code> を CDN から読み込みます。<br>
+      <strong>リポジトリに push する前は動作しません。</strong></p>
+      <ol style="margin-top:12px;">
+        <li><code>bookmarklet_post.js</code> を <code>article-summarizer</code> リポジトリの <strong>main ブランチ</strong> に push する</li>
+        <li>数分後に jsDelivr CDN に反映される</li>
+        <li>インストール済みのブックマークレットはそのまま使える（更新時もブックマーク変更不要）</li>
+      </ol>
+      <pre style="margin-top:12px;">git add bookmarklet_post.js
+git commit -m "Add external bookmarklet script"
+git push origin main</pre>
+      <div class="warn">
+        ⚠️ CDN のキャッシュ反映に最大 24 時間かかる場合があります。<br>
+        すぐ試したい場合は「このページで動作テスト」ボタンを使ってください（ローカル実行）。
+      </div>
+    </section>
+
+    <section>
+      <h2>② 使い方</h2>
+      <ol>
+        <li>投稿したい記事をブラウザで開く</li>
+        <li>引用したい部分のテキストをマウスで<strong>選択（ドラッグ）</strong>する</li>
+        <li>ブックマークバーの「✍️ 記事シェア（投稿版）」をクリック</li>
+        <li>引用欄に選択テキストが自動入力される（編集可）</li>
+        <li>コメントを入力する</li>
+        <li>各SNSのテキストをコピーまたは直接シェア</li>
+      </ol>
+      <div class="note">
+        💡 文字数はリアルタイムで計算されます。X・Threadsは制限内に自動的に収まります。<br>
+        💡 引用もコメントも両方空欄でもURL付きでシェアできます。
+      </div>
+    </section>
+
+    <section>
+      <h2>📋 投稿フォーマット</h2>
+      <p style="font-size:14px;line-height:1.8;">
+        コメントと引用を入力すると、以下の形式で自動整形されます：<br>
+        <code>[コメント]</code><br>
+        <code>&gt; [引用テキスト（複数行は各行に&gt;）]</code><br>
+        <code>[記事タイトル（ThreadsとFacebookのみ）]</code><br>
+        <code>[URL]</code><br>
+        <code>#tag1 #tag2</code>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    var CDN_URL = 'https://cdn.jsdelivr.net/gh/bassie0303/article-summarizer@main/bookmarklet_post.js';
+
+    // ローダーコード（ブックマークに登録する短いコード）
+    var loaderCode = 'javascript:(function(){var s=document.createElement(\'script\');s.src=\'' + CDN_URL + '?t=\'+Date.now();document.body.appendChild(s);})()';
+
+    // ブックマークリンクに設定
+    document.getElementById('bm-link').href = loaderCode;
+    document.getElementById('bm-code').textContent = loaderCode;
+
+    var len = loaderCode.length;
+    var isShort = len < 2000;
+    document.getElementById('bm-len').innerHTML =
+      'コードの長さ: <strong>' + len + ' 文字</strong>' +
+      '<span class="badge ' + (isShort ? 'badge-ok' : 'badge-ng') + '">' +
+      (isShort ? '✅ 同期OK' : '⚠️ 長すぎ') + '</span>';
+    document.getElementById('bm-len2').textContent = len;
+
+    function copyCode() {
+      navigator.clipboard.writeText(loaderCode).then(function() {
+        var btn = document.querySelector('button.act');
+        btn.textContent = '✅ コピー済み';
+        setTimeout(function() { btn.textContent = '📋 コードをコピー'; }, 2000);
+      });
+    }
+
+    // 動作テスト: 外部JSを読み込まず、ローカルの bm() 相当を直接実行
+    function runBookmarklet() {
+      var s = document.createElement('script');
+      s.src = CDN_URL + '?t=' + Date.now();
+      document.body.appendChild(s);
+    }
+  </script>
+</body>
+</html>
