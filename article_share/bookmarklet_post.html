@@ -120,7 +120,7 @@ git push origin main</pre>
   </main>
 
   <script>
-    var CDN_URL = 'https://cdn.jsdelivr.net/gh/bassie0303/article-summarizer@main/bookmarklet_post.js';
+    var CDN_URL = 'https://cdn.jsdelivr.net/gh/bassie0303/article-summarizer@main/article_share/bookmarklet_post.js';
 
     // ローダーコード（ブックマークに登録する短いコード）
     var loaderCode = 'javascript:(function(){var s=document.createElement(\'script\');s.src=\'' + CDN_URL + '?t=\'+Date.now();document.body.appendChild(s);})()';
@@ -145,10 +145,10 @@ git push origin main</pre>
       });
     }
 
-    // 動作テスト: 外部JSを読み込まず、ローカルの bm() 相当を直接実行
+    // 動作テスト: 同フォルダのローカルJSを直接読み込む（CDN不要）
     function runBookmarklet() {
       var s = document.createElement('script');
-      s.src = CDN_URL + '?t=' + Date.now();
+      s.src = './bookmarklet_post.js?t=' + Date.now();
       document.body.appendChild(s);
     }
   </script>
