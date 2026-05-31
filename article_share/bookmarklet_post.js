@@ -67,17 +67,17 @@
   document.getElementById(Q+'h').addEventListener('input',upd);
   document.getElementById(Q+'tp').addEventListener('input',upd);
   async function aiSuggest(prompt,targetId,btn){
-    var k=localStorage.getItem('_s');
-    if(!k){k=window.prompt('Anthropic APIキー(sk-ant-...)を入力してください');if(!k)return;localStorage.setItem('_s',k);}
+    var k=localStorage.getItem('_gemk');
+    if(!k){k=window.prompt('Google AI Studio APIキー(AIzaSy...)を入力してください');if(!k)return;localStorage.setItem('_gemk',k);}
     btn.disabled=true;btn.textContent='生成中...';
     var tx='';
     ['article','main','.post-content','.entry-content'].some(function(s){var e=document.querySelector(s);if(e&&e.innerText.length>100){tx=e.innerText.slice(0,800);return true;}});
     if(!tx)tx=document.body.innerText.slice(0,800);
     try{
-      var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:prompt+'\nタイトル:'+ti+'\n本文:'+tx}]})});
+      var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+k,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt+'\nタイトル:'+ti+'\n本文:'+tx}]}],generationConfig:{maxOutputTokens:80}})});
       if(!r.ok)throw new Error('HTTP '+r.status);
       var d=await r.json();
-      document.getElementById(targetId).value=d.content[0].text.trim();
+      document.getElementById(targetId).value=d.candidates[0].content.parts[0].text.trim();
       upd();
     }catch(e){alert('失敗: '+e.message);}
     btn.disabled=false;btn.textContent='🤖 AIで提案';
