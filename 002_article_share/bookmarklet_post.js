@@ -14,7 +14,11 @@
   var qEl=document.getElementById(Q+'q');
   qEl.value=sel;
   qEl.addEventListener('paste',function(){setTimeout(function(){upd();},0);});
-  if(!sel){setTimeout(function(){qEl.focus();},50);}
+  if(!sel){
+    if(navigator.clipboard&&navigator.clipboard.readText){
+      navigator.clipboard.readText().then(function(txt){if(txt&&!qEl.value){qEl.value=txt.trim();upd();}}).catch(function(){setTimeout(function(){qEl.focus();},50);});
+    }else{setTimeout(function(){qEl.focus();},50);}
+  }
   function _xt(){var tags=[],seen={};var kw=document.querySelector('meta[name="keywords"]');if(kw&&kw.content){kw.content.split(/[,、]+/).forEach(function(t){t=t.trim().replace(/\s+/g,'').replace(/^#+/,'');if(t)tags.push(t);});}if(!tags.length){document.querySelectorAll('meta[property="article:tag"]').forEach(function(m){var t=m.content.trim().replace(/\s+/g,'').replace(/^#+/,'');if(t)tags.push(t);});}if(!tags.length){document.querySelectorAll('a[rel="tag"],a[href*="/hashtag/"],a[href*="/tag/"]').forEach(function(a){var t=(a.textContent||'').trim().replace(/^#+/,'').replace(/\s+/g,'');if(t&&t.length<=15)tags.push(t);});}var r=[];tags.forEach(function(t){if(!seen[t]){seen[t]=true;r.push(t);}});return r.slice(0,4).map(function(t){return'#'+t;}).join(' ');}
   var _initTags=_xt();if(_initTags)document.getElementById(Q+'h').value=_initTags;
   var _savedGemKey=localStorage.getItem('_gemk')||'';
